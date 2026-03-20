@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Kalkulator PPh 21</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="page" id="mainPage">
+
+  <!-- ═══════════════════════ INPUT LAYOUT ═══════════════════════ -->
+  <div class="input-layout" id="inputLayout">
+
+    <!-- Col 1: Hero -->
+    <div class="il-col il-hero">
+      <div class="hero">
+        <div class="hero-tag">Kalkulator Pajak</div>
+        <h1>Apakah Pajak Anda di<br><span>Desember Lebih Tinggi?</span></h1>
+        <p>Masukkan data penghasilan Anda untuk mengetahui PPh 21 setiap bulan · PP No. 58 Tahun 2023</p>
+        <div class="credit-box">
+          Disain dan Development oleh <strong><a href="https://somawiraga.com" target="_blank">Soma Wiraga</a></strong>, seorang Wajib Pajak yang peduli dengan transparansi perpajakan. Kalkulator ini dibuat secara independen untuk memudahkan teman-teman mengetahui perbedaan Take Home Pay di Desember, karena regulasi TER.
+        </div>
+      </div>
+    </div>
+
+    <!-- Col 2: Card Gaji -->
+    <div class="il-col il-gaji">
+      <div class="card card-gaji">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(124,92,252,.15)">💰</div>
+          <div>
+            <h2>Data Penghasilan</h2>
+            <span>Masukkan gaji bruto dan potongan per bulan dari slip gaji</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <label>Gaji Bruto per Bulan</label>
+            <div class="input-wrap">
+              <span class="input-prefix">Rp</span>
+              <input type="text" id="gajiBruto" placeholder="10.000.000" value="10.000.000" inputmode="numeric" oninput="formatInput(this);updateDeduction();resetResults()">
+            </div>
+          </div>
+          <div class="field">
+            <label>Total Potongan per Bulan <br><span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:10px;">(iuran pensiun + asuransi + lainnya)</span></label>
+            <div class="input-wrap">
+              <span class="input-prefix">Rp</span>
+              <input type="text" id="gajiNetto" placeholder="600.000" value="600.000" inputmode="numeric" oninput="formatInput(this);updateDeduction();resetResults()">
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:5px;padding-left:2px;">Contoh: iuran pensiun Rp100.000 + asuransi Rp500.000 = <strong>Rp600.000</strong></div>
+          </div>
+
+          <!-- Derived deductions -->
+          <div class="deduction-bar" id="deductionBar">
+            <div class="deduction-row">
+              <span class="dlabel">Gaji Bruto</span>
+              <span class="dval" id="dBruto">—</span>
+            </div>
+            <div class="deduction-row">
+              <span class="dlabel" style="color:var(--red)">(-) Total Potongan</span>
+              <span class="dval" style="color:var(--red)" id="dPotongan">Rp 600.000</span>
+            </div>
+            <div class="deduction-row total">
+              <span class="dlabel">= Estimasi Gaji Netto</span>
+              <span class="dval" id="dNetto">—</span>
+            </div>
+            <div style="margin-top:6px; padding-top:6px; border-top:1px solid var(--border);">
+              <div style="font-size:11px; color:var(--muted);">Estimasi gaji netto sebelum PPh 21. Take Home Pay aktual = Netto − PPh 21 (bervariasi setiap bulan).</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Col 3: Card Status -->
+    <div class="il-col il-status">
+      <div class="card card-status">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(252,185,92,.15)">👤</div>
+          <div>
+            <h2>Status PTKP</h2>
+            <span>Tentukan status perkawinan & tanggungan</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <label>Status Perkawinan</label>
+            <div class="pill-group">
+              <button class="pill" id="pillTK" onclick="setKawin(false)">Tidak Kawin</button>
+              <button class="pill active" id="pillK" onclick="setKawin(true)">Kawin</button>
+            </div>
+          </div>
+          <div class="field mt8">
+            <label>Jumlah Anak / Tanggungan</label>
+            <div class="pill-group">
+              <button class="pill pill-num active" id="pillA0" onclick="setAnak(0)">0</button>
+              <button class="pill pill-num" id="pillA1" onclick="setAnak(1)">1</button>
+              <button class="pill pill-num" id="pillA2" onclick="setAnak(2)">2</button>
+              <button class="pill pill-num" id="pillA3" onclick="setAnak(3)">3</button>
+            </div>
+          </div>
+          <div class="ptkp-badge" id="ptkpBadge">
+            <div>
+              <div class="plabel">Status PTKP</div>
+              <div class="pval" id="statusPTKP">K/0</div>
+              <div class="pptkp" id="nilaiPTKP">Rp 58.500.000 / tahun</div>
+            </div>
+            <div>
+              <span class="chip purple" id="katTER">Kategori A</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Col 4: Disclaimer + Button -->
+    <div class="il-col il-action">
+      <div class="disclaimer">
+        <div class="disclaimer-icon">ⓘ</div>
+        <div class="disclaimer-text">
+          Kalkulator ini dibuat secara independen berdasarkan regulasi Direktorat Jenderal Pajak (PP No. 58 Tahun 2023 & PMK No. 168 Tahun 2023). Hasil perhitungan bersifat <strong>estimasi</strong> dan dapat berbeda dengan perhitungan resmi pemberi kerja atau otoritas pajak. Konsultasikan dengan profesional pajak untuk keputusan perpajakan Anda. Data yang anda input tidak dikirim ke server manapun dan tidak disimpan, kalkulasi hanya dilakukan di aplikasi ini.
+        </div>
+      </div>
+      <button class="btn-primary" id="btnHitung" onclick="showResults()">Hitung PPh Saya →</button>
+    </div>
+
+  </div><!-- end .input-layout -->
+
+
+  <!-- ═══════════════════════ RESULT LAYOUT ═══════════════════════ -->
+  <div class="result-layout" id="resultLayout">
+
+    <!-- Col 1: Result Hero + Back Button -->
+    <div class="rl-col rl-header">
+      <div class="result-hero">
+        <button class="btn-back" onclick="hideResults()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+          Ubah Data
+        </button>
+        <div class="hero-tag result-hero-tag">Hasil Perhitungan</div>
+        <h2 class="result-hero-title">PPh 21 <span>Anda</span></h2>
+        <div class="result-hero-sub" id="resultSubtitle"></div>
+      </div>
+    </div>
+
+    <!-- Col 2: Result Cards -->
+    <div class="rl-col rl-cards">
+      <div class="result-grid">
+        <div class="result-item rmonth">
+          <span class="rlabel">Bulan Biasa</span>
+          <div class="rmonth-name">Jan–Nov</div>
+          <div class="result-values">
+            <div class="result-val-col">
+              <div class="rthp-label">PPh 21</div>
+              <div class="rpph" id="rPphBulan">—</div>
+            </div>
+            <div class="result-val-col">
+              <div class="rthp-label">Take Home</div>
+              <div class="rthp" id="rThpBulan">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="result-item rthr">
+          <span class="rlabel">Bulan THR</span>
+          <div class="rmonth-name">Maret</div>
+          <div class="result-values">
+            <div class="result-val-col">
+              <div class="rthp-label">PPh 21</div>
+              <div class="rpph" id="rPphThr">—</div>
+            </div>
+            <div class="result-val-col">
+              <div class="rthp-label">Take Home</div>
+              <div class="rthp" id="rThpThr">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="result-item rdes rdes-highlight">
+          <span class="rlabel">Bulan Desember</span>
+          <div class="rmonth-name">Rekonsiliasi</div>
+          <div class="result-values">
+            <div class="result-val-col">
+              <div class="rthp-label">PPh 21</div>
+              <div class="rpph" id="rPphDes">—</div>
+            </div>
+            <div class="result-val-col">
+              <div class="rthp-label">Take Home</div>
+              <div class="rthp-des-wrap">
+                <div class="rthp" id="rThpDes">—</div>
+                <span class="rthp-arrow" id="rThpDesArrow"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Col 3: Summary + Tabungan Pajak + Detail Link -->
+    <div class="rl-col rl-summary">
+      <div class="summary-card">
+        <div class="summary-header">📊 Ringkasan Pajak Setahun</div>
+        <div class="summary-row">
+          <span class="slabel">Penghasilan Kena Pajak</span>
+          <span class="sval" id="sPkp">—</span>
+        </div>
+        <div class="summary-row highlight">
+          <span class="slabel">Total PPh Setahun</span>
+          <span class="sval" id="sTotalPph">—</span>
+        </div>
+        <div class="summary-row" id="sSelisihRow">
+          <span class="slabel">Selisih PPh Des vs Bln Biasa</span>
+          <span class="sval" id="sSelisih">—</span>
+        </div>
+      </div>
+      <div id="savingsContainer"></div>
+      <a class="detail-link" onclick="openDetail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 12h6M9 16h6M9 8h6M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+        </svg>
+        Lihat Detail Langkah Perhitungan
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Col 4: Empty -->
+    <div class="rl-col rl-savings"></div>
+
+  </div><!-- end .result-layout -->
+
+</div><!-- end .page -->
+
+<!-- ═══════════════════════ DETAIL PAGE ═══════════════════════ -->
+<div class="detail-page" id="detailPage">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </button>
+    <div>
+      <h2>Detail Perhitungan</h2>
+      <div class="detail-header-sub">Berdasarkan PP No. 58 Tahun 2023 · PMK No. 168 Tahun 2023</div>
+    </div>
+  </div>
+
+  <div class="detail-body" id="detailBody">
+    <!-- Filled by JS -->
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
